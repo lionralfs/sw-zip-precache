@@ -1,0 +1,13 @@
+{
+  "react-dom.production.min.js": ["/dummy-assets/react-dom.production.min.js", "application/javascript"],
+  "react.production.min.js": ["/dummy-assets/react.production.min.js", "application/javascript"],
+  "tailwind.min.css": ["/dummy-assets/tailwind.min.css", "text/css"],
+  "arrow-up-svgrepo-com.svg": ["/dummy-assets/arrow-up-svgrepo-com.svg", "image/svg+xml"],
+  "attachment-svgrepo-com.svg": ["/dummy-assets/attachment-svgrepo-com.svg", "image/svg+xml"],
+  "backspace-svgrepo-com.svg": ["/dummy-assets/backspace-svgrepo-com.svg", "image/svg+xml"],
+  "ban-svgrepo-com.svg": ["/dummy-assets/ban-svgrepo-com.svg", "image/svg+xml"],
+  "bar-chart-alt-svgrepo-com.svg": ["/dummy-assets/bar-chart-alt-svgrepo-com.svg", "image/svg+xml"],
+  "bar-chart-svgrepo-com.svg": ["/dummy-assets/bar-chart-svgrepo-com.svg", "image/svg+xml"],
+  "board-svgrepo-com.svg": ["/dummy-assets/board-svgrepo-com.svg", "image/svg+xml"],
+  "offline.html": ["/offline.html", "text/html"]
+}
