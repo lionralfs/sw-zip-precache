@@ -3,7 +3,7 @@ import fs from 'fs';
 
 (async () => {
   let results = [];
-  let url = 'https://sad-swanson-d421c3.netlify.app/cookbook.html';
+  let url = 'https://sad-swanson-d421c3.netlify.app/vanilla.html';
   for (let i = 0; i < 100; i++) {
     console.log(i);
     // crawl in blocks of 10, there's prob a smarter way
@@ -40,7 +40,7 @@ import fs from 'fs';
         .catch(console.error),
     ]);
   }
-  fs.writeFileSync('./results-cookbook.json', JSON.stringify(results.filter(Boolean), null, 2), 'utf-8');
+  fs.writeFileSync('./results-vanilla-4Mbps.json', JSON.stringify(results.filter(Boolean).map(e => e.total), null, 2), 'utf-8');
 })();
 
 async function crawl(url) {
@@ -48,7 +48,7 @@ async function crawl(url) {
   try {
     let context = await browser.createIncognitoBrowserContext();
     let page = await context.newPage();
-    await page.emulateNetworkConditions(puppeteer.networkConditions['Slow 3G']);
+    // await page.emulateNetworkConditions(puppeteer.networkConditions['Slow 3G']);
 
     await page.evaluateOnNewDocument(() => {
       const channel = new BroadcastChannel('sw-messages');
