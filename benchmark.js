@@ -3,8 +3,8 @@ import fs from 'fs';
 
 (async () => {
   let results = [];
-  let url = 'https://sad-swanson-d421c3.netlify.app/';
-  for (let i = 0; i < 10; i++) {
+  let url = 'https://sad-swanson-d421c3.netlify.app/vanilla.html';
+  for (let i = 0; i < 100; i++) {
     console.log(i);
     // crawl in blocks of 10, there's prob a smarter way
     await Promise.all([
@@ -40,7 +40,7 @@ import fs from 'fs';
         .catch(console.error),
     ]);
   }
-  fs.writeFileSync('./results-zip.json', JSON.stringify(results, null, 2), 'utf-8');
+  fs.writeFileSync('./results-vanilla.json', JSON.stringify(results, null, 2), 'utf-8');
 })();
 
 async function crawl(url) {
