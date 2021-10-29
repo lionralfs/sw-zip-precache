@@ -3,9 +3,8 @@
 // importScripts('./lib/deflate.js');
 // importScripts('./lib/inflate.js');
 importScripts('https://unpkg.com/@zip.js/zip.js@2.3.18/dist/zip-no-worker.min.js');
-importScripts('./brotli-browser.js');
 
-var ZIP_URL = './package.zip.br';
+var ZIP_URL = './package-no-meta.zip';
 zip.configure({
   useWebWorkers: false,
 });
@@ -13,22 +12,16 @@ zip.configure({
 self.addEventListener('install', (event) => {
   performance.mark('install-start');
   event.waitUntil(
-    fetch(ZIP_URL)
-      .then((res) => res.arrayBuffer())
-      .then((data) => {
-        performance.mark('install-download-complete');
-        return data;
-      })
-      .then((buffer) => decompress(Buffer.from(buffer)))
-      .then((array) => new zip.ZipReader(new zip.Uint8ArrayReader(array)).getEntries())
+    new zip.ZipReader(new zip.HttpReader(ZIP_URL))
+      .getEntries()
       .then(cacheContents)
       .then(async () => {
         performance.mark('install-end');
-        performance.measure('download-measure', 'install-start', 'install-download-complete');
+        // performance.measure('download-measure', 'install-start', 'install-download-complete');
         performance.measure('install-measure', 'install-start', 'install-end');
         let total = performance.getEntriesByName('install-measure')[0].duration;
-        let download = performance.getEntriesByName('download-measure')[0].duration;
-        console.log({ download, total });
+        // let download = performance.getEntriesByName('download-measure')[0].duration;
+        console.log({ total });
 
         const channel = new BroadcastChannel('sw-messages');
         channel.postMessage({ total });
@@ -37,27 +30,16 @@ self.addEventListener('install', (event) => {
   );
 });
 
-function cacheContents(entries) {
-  return new Promise(async function (fulfill, reject) {
-    let i = entries.findIndex((entry) => entry.filename === 'meta.json');
-    let meta = entries[i];
-    entries.splice(i, 1);
-
-    meta = JSON.parse(await meta.getData(new zip.TextWriter()));
-    // console.log('Installing', entries.length, 'files from zip');
-    Promise.all(
-      entries.map((entry) => {
-        let fromMeta = meta[entry.filename];
-        if (!fromMeta || fromMeta.length !== 2) {
-          return console.log(`${entry.filename} is not in meta.json (or broken), ignoring it.`);
-        }
-        return cacheEntry(entry, fromMeta[0], fromMeta[1]);
-      })
-    ).then(fulfill, reject);
-  });
+function getZipReader(data) {
+  return new zip.ZipReader(new zip.Uint8ArrayReader(data));
 }
 
-function cacheEntry(entry, location, contentType) {
+function cacheContents(entries) {
+  //   console.log('Installing', entries.length, 'files from zip');
+  return Promise.all(entries.map(cacheEntry))
+}
+
+function cacheEntry(entry) {
   if (entry.directory) {
     return Promise.resolve();
   }
@@ -66,19 +48,12 @@ function cacheEntry(entry, location, contentType) {
     let data = await entry.getData(new zip.BlobWriter());
     openCache()
       .then(function (cache) {
+        var location = getLocation(entry.filename);
         var response = new Response(data, {
           headers: {
-            'Content-Type': contentType,
+            'Content-Type': getContentType(entry.filename),
           },
         });
-
-        // console.log(
-        //   '-> Caching',
-        //   location,
-        //   '(size:',
-        //   entry.uncompressedSize,
-        //   'bytes)'
-        // );
 
         return cache.put(location, response);
       })
@@ -89,10 +64,30 @@ function cacheEntry(entry, location, contentType) {
 var cachePromise;
 function openCache() {
   if (!cachePromise) {
-    cachePromise = caches.open('cache-from-zip');
+    cachePromise = caches.open('cache-from-zip-no-meta');
   }
   return cachePromise;
 }
+
+function getLocation(filename) {
+  return location.href.replace(/sw-cookbook\.js$/, filename || '');
+}
+
+function getContentType(filename) {
+  var tokens = filename.split('.');
+  var extension = tokens[tokens.length - 1];
+  return contentTypesByExtension[extension] || 'text/plain';
+}
+
+var contentTypesByExtension = {
+  css: 'text/css',
+  js: 'application/javascript',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  html: 'text/html',
+  htm: 'text/html',
+};
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method === 'GET') {
