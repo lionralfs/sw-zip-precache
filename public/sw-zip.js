@@ -1,39 +1,42 @@
-importScripts('./lib/zip.js');
-importScripts('./lib/ArrayBufferReader.js');
-importScripts('./lib/deflate.js');
-importScripts('./lib/inflate.js');
+// importScripts('./lib/zip.js');
+// importScripts('./lib/ArrayBufferReader.js');
+// importScripts('./lib/deflate.js');
+// importScripts('./lib/inflate.js');
+importScripts(
+  'https://unpkg.com/@zip.js/zip.js@2.3.18/dist/zip-no-worker.min.js'
+);
 
 var ZIP_URL = './package.zip';
-zip.useWebWorkers = false;
+zip.configure({
+  useWebWorkers: false,
+});
 
 self.addEventListener('install', (event) => {
   performance.mark('install-start');
   event.waitUntil(
-    fetch(ZIP_URL)
-      .then(function (response) {
-        return response.arrayBuffer();
-      })
-      .then((data) => {
-        performance.mark('install-download-complete');
-        return data;
-      })
-      .then(getZipReader)
+    new zip.ZipReader(new zip.HttpReader(ZIP_URL))
+      .getEntries()
+      // .then((data) => {
+      //   performance.mark('install-download-complete');
+      //   return data;
+      // })
+      // .then(getZipReader)
       .then(cacheContents)
       .then(async () => {
         performance.mark('install-end');
-        performance.measure(
-          'download-measure',
-          'install-start',
-          'install-download-complete'
-        );
+        // performance.measure(
+        //   'download-measure',
+        //   'install-start',
+        //   'install-download-complete'
+        // );
         performance.measure('install-measure', 'install-start', 'install-end');
         let total = performance.getEntriesByName('install-measure')[0].duration;
-        let download =
-          performance.getEntriesByName('download-measure')[0].duration;
-        console.log({ download, total });
+        // let download =
+        //   performance.getEntriesByName('download-measure')[0].duration;
+        console.log({ total });
 
         const channel = new BroadcastChannel('sw-messages');
-        channel.postMessage({ download, total });
+        channel.postMessage({ total });
       })
       .catch(console.error)
   );
@@ -45,28 +48,25 @@ function getZipReader(data) {
   });
 }
 
-function cacheContents(reader) {
-  return new Promise(function (fulfill, reject) {
-    reader.getEntries(function (entries) {
-      let i = entries.findIndex((entry) => entry.filename === 'meta.json');
-      let meta = entries[i];
-      entries.splice(i, 1);
-      meta.getData(new zip.TextWriter(), function (data) {
-        meta = JSON.parse(data);
-        // console.log('Installing', entries.length, 'files from zip');
-        Promise.all(
-          entries.map((entry) => {
-            let fromMeta = meta[entry.filename];
-            if (!fromMeta || fromMeta.length !== 2) {
-              return console.log(
-                `${entry.filename} is not in meta.json (or broken), ignoring it.`
-              );
-            }
-            return cacheEntry(entry, fromMeta[0], fromMeta[1]);
-          })
-        ).then(fulfill, reject);
-      });
-    });
+function cacheContents(entries) {
+  return new Promise(async function (fulfill, reject) {
+    let i = entries.findIndex((entry) => entry.filename === 'meta.json');
+    let meta = entries[i];
+    entries.splice(i, 1);
+
+    meta = JSON.parse(await meta.getData(new zip.TextWriter()));
+    // console.log('Installing', entries.length, 'files from zip');
+    Promise.all(
+      entries.map((entry) => {
+        let fromMeta = meta[entry.filename];
+        if (!fromMeta || fromMeta.length !== 2) {
+          return console.log(
+            `${entry.filename} is not in meta.json (or broken), ignoring it.`
+          );
+        }
+        return cacheEntry(entry, fromMeta[0], fromMeta[1]);
+      })
+    ).then(fulfill, reject);
   });
 }
 
@@ -75,28 +75,27 @@ function cacheEntry(entry, location, contentType) {
     return Promise.resolve();
   }
 
-  return new Promise(function (fulfill, reject) {
-    entry.getData(new zip.BlobWriter(), function (data) {
-      return openCache()
-        .then(function (cache) {
-          var response = new Response(data, {
-            headers: {
-              'Content-Type': contentType,
-            },
-          });
+  return new Promise(async function (fulfill, reject) {
+    let data = await entry.getData(new zip.BlobWriter());
+    openCache()
+      .then(function (cache) {
+        var response = new Response(data, {
+          headers: {
+            'Content-Type': contentType,
+          },
+        });
 
-          // console.log(
-          //   '-> Caching',
-          //   location,
-          //   '(size:',
-          //   entry.uncompressedSize,
-          //   'bytes)'
-          // );
+        // console.log(
+        //   '-> Caching',
+        //   location,
+        //   '(size:',
+        //   entry.uncompressedSize,
+        //   'bytes)'
+        // );
 
-          return cache.put(location, response);
-        })
-        .then(fulfill, reject);
-    });
+        return cache.put(location, response);
+      })
+      .then(fulfill, reject);
   });
 }
 
