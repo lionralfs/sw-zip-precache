@@ -1,11 +1,7 @@
-// importScripts('./lib/zip.js');
-// importScripts('./lib/ArrayBufferReader.js');
-// importScripts('./lib/deflate.js');
-// importScripts('./lib/inflate.js');
 importScripts('https://unpkg.com/@zip.js/zip.js@2.3.18/dist/zip-no-worker.min.js');
-// importScripts('./brotli-browser.js');
+importScripts('./brotli-browser.js');
 
-var ZIP_URL = './package.zip';
+var ZIP_URL = './package-of-br.zip';
 zip.configure({
   useWebWorkers: false,
 });
@@ -37,21 +33,23 @@ self.addEventListener('install', (event) => {
 
 function cacheContents(entries) {
   return new Promise(function (fulfill, reject) {
-    let i = entries.findIndex((entry) => entry.filename === 'meta.json');
+    let i = entries.findIndex((entry) => entry.filename === 'meta.json.br');
     let meta = entries[i];
     entries.splice(i, 1);
 
     meta
-      .getData(new zip.TextWriter())
+      .getData(new zip.Uint8ArrayWriter())
+      .then((buffer) => decompress(Buffer.from(buffer)))
       .then((meta) => {
-        return JSON.parse(meta);
+        return JSON.parse(new TextDecoder().decode(meta));
       })
       .then((meta) => {
         Promise.all(
           entries.map((entry) => {
-            let fromMeta = meta[entry.filename];
+            let filename = entry.filename.replace(/\.br$/, '');
+            let fromMeta = meta[filename];
             if (!fromMeta || fromMeta.length !== 2) {
-              return console.log(`${entry.filename} is not in meta.json (or broken), ignoring it.`);
+              return console.log(`${filename} is not in meta.json (or broken), ignoring it.`);
             }
             return cacheEntry(entry, fromMeta[0], fromMeta[1]);
           })
@@ -67,12 +65,15 @@ function cacheEntry(entry, location, contentType) {
   }
 
   return new Promise(async function (fulfill, reject) {
-    let data = await entry.getData(new zip.BlobWriter());
+    let data = await entry.getData(new zip.Uint8ArrayWriter());
+    let decoded = decompress(Buffer.from(data));
+
     openCache()
       .then(function (cache) {
-        var response = new Response(data, {
+        var response = new Response(decoded, {
           headers: {
             'Content-Type': contentType,
+            'Content-Encoding': 'br'
           },
         });
 
@@ -93,7 +94,7 @@ function cacheEntry(entry, location, contentType) {
 var cachePromise;
 function openCache() {
   if (!cachePromise) {
-    cachePromise = caches.open('cache-from-zip');
+    cachePromise = caches.open('cache-from-zipped-br');
   }
   return cachePromise;
 }

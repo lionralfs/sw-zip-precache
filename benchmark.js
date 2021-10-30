@@ -3,7 +3,7 @@ import fs from 'fs';
 
 (async () => {
   let results = [];
-  let url = 'https://sad-swanson-d421c3.netlify.app/vanilla.html';
+  let url = 'https://sad-swanson-d421c3.netlify.app';
   for (let i = 0; i < 100; i++) {
     console.log(i);
     // crawl in blocks of 10, there's prob a smarter way
@@ -40,7 +40,15 @@ import fs from 'fs';
         .catch(console.error),
     ]);
   }
-  fs.writeFileSync('./results-vanilla-4Mbps.json', JSON.stringify(results.filter(Boolean).map(e => e.total), null, 2), 'utf-8');
+  fs.writeFileSync(
+    './public/results-zip-of-br-50Mbps-2xCPUthrottle.json',
+    JSON.stringify(
+      results.filter(Boolean).map((e) => e.total),
+      null,
+      2
+    ),
+    'utf-8'
+  );
 })();
 
 async function crawl(url) {
@@ -49,6 +57,7 @@ async function crawl(url) {
     let context = await browser.createIncognitoBrowserContext();
     let page = await context.newPage();
     // await page.emulateNetworkConditions(puppeteer.networkConditions['Slow 3G']);
+    await page.emulateCPUThrottling(2);
 
     await page.evaluateOnNewDocument(() => {
       const channel = new BroadcastChannel('sw-messages');
@@ -57,7 +66,7 @@ async function crawl(url) {
       });
     });
 
-    await page.goto(url);
+    await page.goto(url, { waitUntil: 'load', timeout: 60 * 1000 });
 
     await page.waitForFunction(() => {
       return window.result !== undefined;
