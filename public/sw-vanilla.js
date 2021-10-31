@@ -4,9 +4,6 @@ self.addEventListener('install', (event) => {
     openCache().then((cache) => {
       cache
         .addAll([
-          '/dummy-assets/react-dom.production.min.js',
-          '/dummy-assets/react.production.min.js',
-          '/dummy-assets/tailwind.min.css',
           '/dummy-assets/arrow-up-svgrepo-com.svg',
           '/dummy-assets/attachment-svgrepo-com.svg',
           '/dummy-assets/backspace-svgrepo-com.svg',
@@ -14,17 +11,17 @@ self.addEventListener('install', (event) => {
           '/dummy-assets/bar-chart-alt-svgrepo-com.svg',
           '/dummy-assets/bar-chart-svgrepo-com.svg',
           '/dummy-assets/board-svgrepo-com.svg',
+          '/dummy-assets/react-dom.production.min.js',
+          '/dummy-assets/react.production.min.js',
+          '/dummy-assets/roboto-v29-latin-700.woff2',
+          '/dummy-assets/roboto-v29-latin-regular.woff2',
+          '/dummy-assets/tailwind.min.css',
           '/offline.html',
         ])
         .then(() => {
           performance.mark('install-end');
-          performance.measure(
-            'install-measure',
-            'install-start',
-            'install-end'
-          );
-          let total =
-            performance.getEntriesByName('install-measure')[0].duration;
+          performance.measure('install-measure', 'install-start', 'install-end');
+          let total = performance.getEntriesByName('install-measure')[0].duration;
 
           const channel = new BroadcastChannel('sw-messages');
           channel.postMessage({ total });

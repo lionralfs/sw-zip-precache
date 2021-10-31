@@ -1,1 +1,0 @@
-zip -r -j -FS -9 public/package.zip public/dummy-assets/* public/offline.html

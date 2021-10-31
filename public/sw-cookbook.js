@@ -1,10 +1,6 @@
-// importScripts('./lib/zip.js');
-// importScripts('./lib/ArrayBufferReader.js');
-// importScripts('./lib/deflate.js');
-// importScripts('./lib/inflate.js');
 importScripts('https://unpkg.com/@zip.js/zip.js@2.3.18/dist/zip-no-worker.min.js');
 
-var ZIP_URL = './package-no-meta.zip';
+var ZIP_URL = './package-cookbook.zip';
 zip.configure({
   useWebWorkers: false,
 });
@@ -36,7 +32,7 @@ function getZipReader(data) {
 
 function cacheContents(entries) {
   //   console.log('Installing', entries.length, 'files from zip');
-  return Promise.all(entries.map(cacheEntry))
+  return Promise.all(entries.map(cacheEntry));
 }
 
 function cacheEntry(entry) {

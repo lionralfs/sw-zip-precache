@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "benchmarks": [
+    {
+      "url": "http://localhost:8080/?benchmark",
+      "name": "zipped brotlis",
+      "measurement": "global",
+      "expand": [
+        {
+          "browser": {
+            "name": "chrome",
+            "headless": true,
+            "cpuThrottlingRate": 1
+          }
+        },
+        {
+          "browser": {
+            "name": "firefox",
+            "headless": true
+          }
+        }
+      ]
+    },
+    {
+      "url": "http://localhost:8080/vanilla.html?benchmark",
+      "name": "vanilla",
+      "measurement": "global",
+      "expand": [
+        {
+          "browser": {
+            "name": "chrome",
+            "headless": true,
+            "cpuThrottlingRate": 1
+          }
+        },
+        {
+          "browser": {
+            "name": "firefox",
+            "headless": true
+          }
+        }
+      ]
+    },
+    {
+      "url": "http://localhost:8080/cookbook.html?benchmark",
+      "name": "cookbook",
+      "measurement": "global",
+      "expand": [
+        {
+          "browser": {
+            "name": "chrome",
+            "headless": true,
+            "cpuThrottlingRate": 1
+          }
+        },
+        {
+          "browser": {
+            "name": "firefox",
+            "headless": true
+          }
+        }
+      ]
+    }
+  ]
+}

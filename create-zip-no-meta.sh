@@ -1,1 +1,0 @@
-zip -r -j -FS -9 public/package-no-meta.zip public/offline.html public/dummy-assets/* -x "*meta.json"

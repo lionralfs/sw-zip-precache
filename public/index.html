@@ -9,18 +9,9 @@
     <a href="/">With zip</a>
     <a href="/vanilla.html">vanilla</a>
     <a href="/cookbook.html">cookbook</a>
+    <script src="install-snippet.js"></script>
     <script>
-      navigator.serviceWorker
-        .register('/sw-zip-br.js')
-        .then(function () {
-          console.log('Installing...');
-        })
-        .catch(function (error) {
-          console.log(
-            'An error happened during installing the service worker:'
-          );
-          console.log(error.message);
-        });
+      install('/sw-zip-br.js');
     </script>
   </body>
 </html>

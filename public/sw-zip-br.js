@@ -66,14 +66,15 @@ function cacheEntry(entry, location, contentType) {
 
   return new Promise(async function (fulfill, reject) {
     let data = await entry.getData(new zip.Uint8ArrayWriter());
-    let decoded = decompress(Buffer.from(data));
+    if (contentType !== 'font/woff2') {
+      data = decompress(Buffer.from(data));
+    }
 
     openCache()
       .then(function (cache) {
-        var response = new Response(decoded, {
+        var response = new Response(data, {
           headers: {
             'Content-Type': contentType,
-            'Content-Encoding': 'br'
           },
         });
 
