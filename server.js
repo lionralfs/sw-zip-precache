@@ -1,5 +1,6 @@
 import express from 'express';
 import fs from 'fs';
+import https from 'https';
 
 const app = express();
 
@@ -24,7 +25,15 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.static('public'));
-app.listen(8080, () => console.log('server running...'));
+https
+  .createServer(
+    {
+      key: fs.readFileSync('192.168.3.53+1-key.pem'),
+      cert: fs.readFileSync('192.168.3.53+1.pem'),
+    },
+    app
+  )
+  .listen(8080, () => console.log('server running...'));
 
 /**
  * @see https://newbedev.com/node-js-fs-readdir-recursive-directory-search
