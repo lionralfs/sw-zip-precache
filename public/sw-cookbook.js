@@ -5,25 +5,28 @@ zip.configure({
   useWebWorkers: false,
 });
 
+let result;
+self.addEventListener('message', function (event) {
+  event.ports[0].postMessage(result);
+});
+
 self.addEventListener('install', (event) => {
-  performance.mark('install-start');
-  event.waitUntil(
-    new zip.ZipReader(new zip.HttpReader(ZIP_URL))
+  self.skipWaiting();
+
+  const preCache = async () => {
+    performance.mark('install-start');
+    await new zip.ZipReader(new zip.HttpReader(ZIP_URL))
       .getEntries()
       .then(cacheContents)
-      .then(async () => {
+      .then(() => {
         performance.mark('install-end');
-        // performance.measure('download-measure', 'install-start', 'install-download-complete');
         performance.measure('install-measure', 'install-start', 'install-end');
         let total = performance.getEntriesByName('install-measure')[0].duration;
-        // let download = performance.getEntriesByName('download-measure')[0].duration;
-        console.log({ total });
+        result = { total };
+      });
+  };
 
-        const channel = new BroadcastChannel('sw-messages');
-        channel.postMessage({ total });
-      })
-      .catch(console.error)
-  );
+  event.waitUntil(preCache().catch(console.error));
 });
 
 function getZipReader(data) {
@@ -60,13 +63,13 @@ function cacheEntry(entry) {
 var cachePromise;
 function openCache() {
   if (!cachePromise) {
-    cachePromise = caches.open('cache-from-zip-no-meta');
+    cachePromise = caches.open('cache-from-zip-cookbook');
   }
   return cachePromise;
 }
 
 function getLocation(filename) {
-  return location.href.replace(/sw-cookbook\.js$/, filename || '');
+  return location.href.replace(/sw-cookbook\.js$/, `precache/${filename}` || '');
 }
 
 function getContentType(filename) {
@@ -83,6 +86,7 @@ var contentTypesByExtension = {
   jpeg: 'image/jpeg',
   html: 'text/html',
   htm: 'text/html',
+  svg: 'image/svg+xml',
 };
 
 self.addEventListener('fetch', (event) => {
@@ -91,7 +95,7 @@ self.addEventListener('fetch', (event) => {
       fetch(event.request).catch(async function () {
         const cache = await openCache();
         if (event.request.headers.get('accept').includes('text/html')) {
-          return cache.match('/offline.html');
+          return cache.match('/precache/offline.html');
         }
         return cache.match(event.request);
       })

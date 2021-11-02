@@ -1,1 +1,1 @@
-zip -r -j -FS -9 public/package-cookbook.zip public/offline.html public/dummy-assets/* -x "*.br"
+zip -r -j -FS -9 public/package-cookbook.zip public/precache/* -x "*.br"

@@ -1,34 +1,36 @@
-self.addEventListener('install', (event) => {
-  performance.mark('install-start');
-  event.waitUntil(
-    openCache().then((cache) => {
-      cache
-        .addAll([
-          '/dummy-assets/arrow-up-svgrepo-com.svg',
-          '/dummy-assets/attachment-svgrepo-com.svg',
-          '/dummy-assets/backspace-svgrepo-com.svg',
-          '/dummy-assets/ban-svgrepo-com.svg',
-          '/dummy-assets/bar-chart-alt-svgrepo-com.svg',
-          '/dummy-assets/bar-chart-svgrepo-com.svg',
-          '/dummy-assets/board-svgrepo-com.svg',
-          '/dummy-assets/react-dom.production.min.js',
-          '/dummy-assets/react.production.min.js',
-          '/dummy-assets/roboto-v29-latin-700.woff2',
-          '/dummy-assets/roboto-v29-latin-regular.woff2',
-          '/dummy-assets/tailwind.min.css',
-          '/offline.html',
-        ])
-        .then(() => {
-          performance.mark('install-end');
-          performance.measure('install-measure', 'install-start', 'install-end');
-          let total = performance.getEntriesByName('install-measure')[0].duration;
+let result;
+self.addEventListener('message', function (event) {
+  event.ports[0].postMessage(result);
+});
 
-          const channel = new BroadcastChannel('sw-messages');
-          channel.postMessage({ total });
-          console.log({ total });
-        });
-    })
-  );
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+
+  const preCache = async () => {
+    performance.mark('install-start');
+    const cache = await openCache();
+    await cache.addAll([
+      '/precache/arrow-up-svgrepo-com.svg',
+      '/precache/attachment-svgrepo-com.svg',
+      '/precache/backspace-svgrepo-com.svg',
+      '/precache/ban-svgrepo-com.svg',
+      '/precache/bar-chart-alt-svgrepo-com.svg',
+      '/precache/bar-chart-svgrepo-com.svg',
+      '/precache/board-svgrepo-com.svg',
+      '/precache/react-dom.production.min.js',
+      '/precache/react.production.min.js',
+      '/precache/roboto-v29-latin-700.woff2',
+      '/precache/roboto-v29-latin-regular.woff2',
+      '/precache/tailwind.min.css',
+      '/precache/offline.html',
+    ]);
+    performance.mark('install-end');
+    performance.measure('install-measure', 'install-start', 'install-end');
+    let total = performance.getEntriesByName('install-measure')[0].duration;
+    result = { total };
+  };
+
+  event.waitUntil(preCache().catch(console.error));
 });
 
 var cachePromise;
@@ -45,7 +47,7 @@ self.addEventListener('fetch', (event) => {
       fetch(event.request).catch(async function () {
         const cache = await openCache();
         if (event.request.headers.get('accept').includes('text/html')) {
-          return cache.match('/offline.html');
+          return cache.match('/precache/offline.html');
         }
         return cache.match(event.request);
       })

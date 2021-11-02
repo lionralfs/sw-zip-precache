@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline page</title>
+    <link rel="stylesheet" href="precache/tailwind.min.css" />
+    <style>
+      /* roboto-regular - latin */
+      @font-face {
+        font-family: 'Roboto';
+        font-style: normal;
+        font-weight: 400;
+        src: url('precache/roboto-v29-latin-regular.woff2') format('woff2');
+      }
+
+      /* roboto-700 - latin */
+      @font-face {
+        font-family: 'Roboto';
+        font-style: normal;
+        font-weight: 700;
+        src: url('precache/roboto-v29-latin-700.woff2') format('woff2');
+      }
+
+      html {
+        font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="text-6xl font-bold leading-normal mt-0 mb-2 text-purple-800">You are offline!</h1>
+    <p class="font-normal">I've included all the precache here, to see if they load correctly from cache when offline.</p>
+    <img src="precache/arrow-up-svgrepo-com.svg" />
+    <img src="precache/attachment-svgrepo-com.svg" />
+    <img src="precache/backspace-svgrepo-com.svg" />
+    <img src="precache/ban-svgrepo-com.svg" />
+    <img src="precache/bar-chart-alt-svgrepo-com.svg" />
+    <img src="precache/bar-chart-svgrepo-com.svg" />
+    <img src="precache/board-svgrepo-com.svg" />
+
+    <script src="precache/react.production.min.js"></script>
+    <script src="precache/react-dom.production.min.js"></script>
+  </body>
+</html>

@@ -6,29 +6,25 @@ zip.configure({
   useWebWorkers: false,
 });
 
-self.addEventListener('install', (event) => {
-  performance.mark('install-start');
-  event.waitUntil(
-    new zip.ZipReader(new zip.HttpReader(ZIP_URL))
-      .getEntries()
-      // .then((data) => {
-      //   performance.mark('install-download-complete');
-      //   return data;
-      // })
-      .then(cacheContents)
-      .then(async () => {
-        performance.mark('install-end');
-        // performance.measure('download-measure', 'install-start', 'install-download-complete');
-        performance.measure('install-measure', 'install-start', 'install-end');
-        let total = performance.getEntriesByName('install-measure')[0].duration;
-        // let download = performance.getEntriesByName('download-measure')[0].duration;
-        console.log({ total });
+let result;
+self.addEventListener('message', function (event) {
+  event.ports[0].postMessage(result);
+});
 
-        const channel = new BroadcastChannel('sw-messages');
-        channel.postMessage({ total });
-      })
-      .catch(console.error)
-  );
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+
+  const preCache = async () => {
+    performance.mark('install-start');
+    await new zip.ZipReader(new zip.HttpReader(ZIP_URL)).getEntries().then(cacheContents);
+
+    performance.mark('install-end');
+    performance.measure('install-measure', 'install-start', 'install-end');
+    let total = performance.getEntriesByName('install-measure')[0].duration;
+    result = { total };
+  };
+
+  event.waitUntil(preCache().catch(console.error));
 });
 
 function cacheContents(entries) {
@@ -55,7 +51,6 @@ function cacheContents(entries) {
           })
         ).then(fulfill, reject);
       });
-    // console.log('Installing', entries.length, 'files from zip');
   });
 }
 
@@ -78,14 +73,6 @@ function cacheEntry(entry, location, contentType) {
           },
         });
 
-        // console.log(
-        //   '-> Caching',
-        //   location,
-        //   '(size:',
-        //   entry.uncompressedSize,
-        //   'bytes)'
-        // );
-
         return cache.put(location, response);
       })
       .then(fulfill, reject);
@@ -106,7 +93,7 @@ self.addEventListener('fetch', (event) => {
       fetch(event.request).catch(async function () {
         const cache = await openCache();
         if (event.request.headers.get('accept').includes('text/html')) {
-          return cache.match('/offline.html');
+          return cache.match('/precache/offline.html');
         }
         return cache.match(event.request);
       })
