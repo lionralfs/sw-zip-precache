@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Benchmark - Cookbook</title>
+  </head>
+  <body>
+    <script src="https://unpkg.com/@zip.js/zip.js@2.3.18/dist/zip-no-worker.min.js"></script>
+    <script>
+      function cacheContents(entries) {
+        return Promise.all(entries.map(cacheEntry));
+      }
+
+      async function cacheEntry(entry) {
+        if (entry.directory) {
+          return;
+        }
+
+        let data = await entry.getData(new zip.BlobWriter());
+        let location = getLocation(entry.filename);
+        let response = new Response(data, {
+          headers: {
+            'Content-Type': getContentType(entry.filename),
+          },
+        });
+        return response;
+      }
+
+      function getLocation(filename) {
+        return location.origin + `/precache/${filename}` || '';
+      }
+
+      function getContentType(filename) {
+        let tokens = filename.split('.');
+        let extension = tokens[tokens.length - 1];
+        return contentTypesByExtension[extension] || 'text/plain';
+      }
+
+      let contentTypesByExtension = {
+        css: 'text/css',
+        js: 'application/javascript',
+        png: 'image/png',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        html: 'text/html',
+        htm: 'text/html',
+        svg: 'image/svg+xml',
+      };
+
+      zip.configure({
+        useWebWorkers: false,
+      });
+
+      (async () => {
+        performance.mark('install-start');
+        await new zip.ZipReader(new zip.HttpReader('./package-cookbook.zip', { preventHeadRequest: true }))
+          .getEntries()
+          .then(cacheContents)
+          .then(() => {
+            performance.mark('install-end');
+            performance.measure('install-measure', 'install-start', 'install-end');
+            let total = performance.getEntriesByName('install-measure')[0].duration;
+            console.log({ total });
+          });
+      })();
+    </script>
+  </body>
+</html>

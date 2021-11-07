@@ -1,13 +1,7 @@
-let result;
-self.addEventListener('message', function (event) {
-  event.ports[0].postMessage(result);
-});
+// not for benchmarking, just for demo purposes
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
-
   const preCache = async () => {
-    performance.mark('install-start');
     const cache = await openCache();
     await cache.addAll([
       '/precache/arrow-up-svgrepo-com.svg',
@@ -24,10 +18,6 @@ self.addEventListener('install', (event) => {
       '/precache/tailwind.min.css',
       '/precache/offline.html',
     ]);
-    performance.mark('install-end');
-    performance.measure('install-measure', 'install-start', 'install-end');
-    let total = performance.getEntriesByName('install-measure')[0].duration;
-    result = { total };
   };
 
   event.waitUntil(preCache().catch(console.error));

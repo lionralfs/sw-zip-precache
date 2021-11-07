@@ -1,27 +1,16 @@
+// not for benchmarking, just for demo purposes
+
 importScripts('https://unpkg.com/@zip.js/zip.js@2.3.18/dist/zip-no-worker.min.js');
 importScripts('./brotli-browser.js');
 
-var ZIP_URL = './package-of-br.zip';
+const ZIP_URL = './package-of-br.zip';
 zip.configure({
   useWebWorkers: false,
 });
 
-let result;
-self.addEventListener('message', function (event) {
-  event.ports[0].postMessage(result);
-});
-
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
-
   const preCache = async () => {
-    performance.mark('install-start');
     await new zip.ZipReader(new zip.HttpReader(ZIP_URL)).getEntries().then(cacheContents);
-
-    performance.mark('install-end');
-    performance.measure('install-measure', 'install-start', 'install-end');
-    let total = performance.getEntriesByName('install-measure')[0].duration;
-    result = { total };
   };
 
   event.waitUntil(preCache().catch(console.error));

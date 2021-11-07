@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Benchmark - Vanilla</title>
+  </head>
+  <body>
+    <script>
+      (async () => {
+        const urls = [
+          '/precache/arrow-up-svgrepo-com.svg',
+          '/precache/attachment-svgrepo-com.svg',
+          '/precache/backspace-svgrepo-com.svg',
+          '/precache/ban-svgrepo-com.svg',
+          '/precache/bar-chart-alt-svgrepo-com.svg',
+          '/precache/bar-chart-svgrepo-com.svg',
+          '/precache/board-svgrepo-com.svg',
+          '/precache/react-dom.production.min.js',
+          '/precache/react.production.min.js',
+          '/precache/roboto-v29-latin-700.woff2',
+          '/precache/roboto-v29-latin-regular.woff2',
+          '/precache/tailwind.min.css',
+          '/precache/offline.html',
+        ];
+        performance.mark('install-start');
+        await Promise.all(urls.map((url) => fetch(url)));
+        performance.mark('install-end');
+
+        performance.measure('install-measure', 'install-start', 'install-end');
+        let total = performance.getEntriesByName('install-measure')[0].duration;
+        console.log({ total });
+      })();
+    </script>
+  </body>
+</html>

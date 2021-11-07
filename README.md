@@ -1,3 +1,21 @@
+### Browser versions
+
+CHROME: 95.0.4638.69 (x86_64)
+FIREFOX: 94.0.1 (64-bit)
+SAFARI: 15.1 (17612.2.9.1.20)
+
+### Local machine
+
+MacBook Pro (2019) 
+macOS Monterey 12.0.1 (21A559)
+2,6 GHz 6-Core Intel Core i7
+32 GB 2667 MHz DDR4
+
+### Remote server
+
+Raspberry Pi 4 Model B Rev 1.4
+Ubuntu 20.04.3 LTS
+
 ### Chrome traces
 
 ```json
@@ -8,7 +26,7 @@
   "lineNumber": 1,
   "notStreamedReason": "script has code-cache available",
   "streamed": false,
-  "url": "http://localhost:8080/precache/react.production.min.js"
+  "url": "http://localhost:8888/precache/react.production.min.js"
 }
 ```
 
@@ -20,13 +38,11 @@
   "lineNumber": 1,
   "notStreamedReason": "script has code-cache available",
   "streamed": false,
-  "url": "http://localhost:8080/precache/react-dom.production.min.js"
+  "url": "http://localhost:8888/precache/react-dom.production.min.js"
 }
 ```
 
-### Parameters
-
-#### Precache assets
+### Sizes of precache assets
 
 - arrow-up-svgrepo-com.svg - 269 B
 - attachment-svgrepo-com.svg - 616 B
@@ -62,14 +78,8 @@ brotli with --best:
 - tailwind.min.css.br - 72895 B
 - offline.html.br - 439 B
 
---> zipped (store-only): TODO
-
 #### Compared size (raw transferred bytes)
 
 - zip of brotlis: 147665 B
-- sum of individual brotlis: 145155 B
+- sum of individual brotlis: 144905 B
 - cookbook zip size: 374628 B
-
-obviously they are similar, cause zip is no-store, otherwise same files (2510 B store-only zip overhead)
-
-overhead of individual http requests?

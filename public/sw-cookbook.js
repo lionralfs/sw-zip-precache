@@ -1,29 +1,15 @@
+// not for benchmarking, just for demo purposes
+
 importScripts('https://unpkg.com/@zip.js/zip.js@2.3.18/dist/zip-no-worker.min.js');
 
-var ZIP_URL = './package-cookbook.zip';
+const ZIP_URL = './package-cookbook.zip';
 zip.configure({
   useWebWorkers: false,
 });
 
-let result;
-self.addEventListener('message', function (event) {
-  event.ports[0].postMessage(result);
-});
-
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
-
   const preCache = async () => {
-    performance.mark('install-start');
-    await new zip.ZipReader(new zip.HttpReader(ZIP_URL))
-      .getEntries()
-      .then(cacheContents)
-      .then(() => {
-        performance.mark('install-end');
-        performance.measure('install-measure', 'install-start', 'install-end');
-        let total = performance.getEntriesByName('install-measure')[0].duration;
-        result = { total };
-      });
+    await new zip.ZipReader(new zip.HttpReader(ZIP_URL)).getEntries().then(cacheContents);
   };
 
   event.waitUntil(preCache().catch(console.error));
@@ -34,7 +20,7 @@ function getZipReader(data) {
 }
 
 function cacheContents(entries) {
-  //   console.log('Installing', entries.length, 'files from zip');
+  console.log('Installing', entries.length, 'files from zip');
   return Promise.all(entries.map(cacheEntry));
 }
 

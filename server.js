@@ -8,6 +8,7 @@ const app = express();
 const brotliFiles = new Set(walk('public', (f) => f.endsWith('.br')));
 
 app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
   let asBrotli = 'public' + req.url + '.br';
 
   if (req.acceptsEncodings('br') !== false && brotliFiles.has(asBrotli)) {
@@ -19,21 +20,21 @@ app.use((req, res, next) => {
     let last = parts[parts.length - 1];
     res.contentType(last);
 
-    res.sendFile(asBrotli, { root: '.' });
+    res.sendFile(asBrotli, { root: '.', etag: false });
     return;
   }
   next();
 });
-app.use(express.static('public'));
+app.use(express.static('public', { etag: false }));
 https
   .createServer(
     {
-      key: fs.readFileSync('192.168.3.53+1-key.pem'),
-      cert: fs.readFileSync('192.168.3.53+1.pem'),
+      key: fs.readFileSync('192.168.3.35+1-key.pem'),
+      cert: fs.readFileSync('192.168.3.35+1.pem'),
     },
     app
   )
-  .listen(8080, () => console.log('server running...'));
+  .listen(8888, () => console.log('server running...'));
 
 /**
  * @see https://newbedev.com/node-js-fs-readdir-recursive-directory-search

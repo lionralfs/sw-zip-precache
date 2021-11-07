@@ -21,10 +21,10 @@ function install(swPath) {
         .then((registrations) => {
           return Promise.all(registrations.map((registration) => registration.unregister()));
         })
-        .then(() => console.log('uninstalled all'));
+        .then(() => log('uninstalled all'));
     })
     .then(() => {
-      console.log('installing new sw');
+      log('installing new sw');
       navigator.serviceWorker
         .register(swPath)
         .then(function (registration) {
@@ -41,10 +41,12 @@ function install(swPath) {
 
           if (serviceWorker) {
             // console.log(serviceWorker.state);
+            log('start state: ' + serviceWorker.state);
             if (serviceWorker.state !== 'installing') {
-              return console.log('not a clean start');
+              return log('not a clean start');
             }
             serviceWorker.addEventListener('statechange', function (e) {
+              log('new state: ' + e.target.state);
               // console.log(e.target.state);
               if (e.target.state === 'activated') {
                 e.target.postMessage('yo', [messageChannel.port1]);
@@ -53,14 +55,28 @@ function install(swPath) {
           }
 
           messageChannel.port2.onmessage = (event) => {
-            console.log(event.data);
-            window.tachometerResult = event.data.total;
+            // unregister all old service workers
+            return navigator.serviceWorker
+              .getRegistrations()
+              .then((registrations) => {
+                return Promise.all(registrations.map((registration) => registration.unregister()));
+              })
+              .then(() => {
+                log('uninstalled all');
+                log(JSON.stringify(event.data));
+                window.tachometerResult = event.data.total;
+              });
           };
         })
         .catch(function (error) {
-          console.log('An error happened during installing the service worker:');
-          console.log(error.message);
+          log('An error happened during installing the service worker:');
+          log(error.message);
         });
     })
     .catch(console.error);
+}
+
+function log(str) {
+  document.body.appendChild(document.createTextNode(str));
+  document.body.appendChild(document.createElement('br'));
 }

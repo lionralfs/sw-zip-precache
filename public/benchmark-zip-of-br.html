@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Benchmark - zip of br</title>
+  </head>
+  <body>
+    <script src="https://unpkg.com/@zip.js/zip.js@2.3.18/dist/zip-no-worker.min.js"></script>
+    <script src="./brotli-browser.js"></script>
+    <script>
+      async function cacheContents(entries) {
+        let i = entries.findIndex((entry) => entry.filename === 'meta.json.br');
+        let metaEntry = entries[i];
+        entries.splice(i, 1);
+        let meta = await metaEntry
+          .getData(new zip.Uint8ArrayWriter())
+          .then((buffer) => decompress(Buffer.from(buffer)))
+          .then((data) => JSON.parse(new TextDecoder().decode(data)));
+
+        return Promise.all(
+          entries.map((entry) => {
+            let filename = entry.filename.replace(/\.br$/, '');
+            let fromMeta = meta[filename];
+            if (!fromMeta || fromMeta.length !== 2) {
+              return console.log(`${filename} is not in meta.json (or broken), ignoring it.`);
+            }
+            return cacheEntry(entry, fromMeta[0], fromMeta[1]);
+          })
+        );
+      }
+
+      async function cacheEntry(entry, location, contentType) {
+        if (entry.directory) {
+          return;
+        }
+
+        let data = await entry.getData(new zip.Uint8ArrayWriter());
+        if (contentType !== 'font/woff2') {
+          data = decompress(Buffer.from(data));
+        }
+        let response = new Response(data, {
+          headers: {
+            'Content-Type': contentType,
+          },
+        });
+        return response;
+      }
+
+      zip.configure({
+        useWebWorkers: false,
+      });
+
+      (async () => {
+        performance.mark('install-start');
+        await new zip.ZipReader(new zip.HttpReader('./package-of-br.zip', { preventHeadRequest: true }))
+          .getEntries()
+          .then(cacheContents)
+          .then(() => {
+            performance.mark('install-end');
+            performance.measure('install-measure', 'install-start', 'install-end');
+            let total = performance.getEntriesByName('install-measure')[0].duration;
+            console.log({ total });
+          });
+      })();
+    </script>
+  </body>
+</html>

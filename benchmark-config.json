@@ -2,61 +2,85 @@
   "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
   "benchmarks": [
     {
-      "url": "http://localhost:8080/?benchmark",
+      "url": "https://192.168.3.35:8888/benchmark-zip-of-br.html",
       "name": "zipped brotlis",
-      "measurement": "global",
+      "measurement": {
+        "mode": "performance",
+        "entryName": "install-measure"
+      },
       "expand": [
         {
           "browser": {
             "name": "chrome",
-            "headless": true,
-            "cpuThrottlingRate": 1
+            "headless": false
           }
         },
         {
           "browser": {
             "name": "firefox",
-            "headless": true
+            "headless": false,
+            "profile": "/Users/lionralfs/Library/Application Support/Firefox/Profiles/aqnmme6p.benchmark-profile"
+          }
+        },
+        {
+          "browser": {
+            "name": "safari"
           }
         }
       ]
     },
     {
-      "url": "http://localhost:8080/vanilla.html?benchmark",
+      "url": "https://192.168.3.35:8888/benchmark-vanilla.html",
       "name": "vanilla",
-      "measurement": "global",
+      "measurement": {
+        "mode": "performance",
+        "entryName": "install-measure"
+      },
       "expand": [
         {
           "browser": {
             "name": "chrome",
-            "headless": true,
-            "cpuThrottlingRate": 1
+            "headless": true
           }
         },
         {
           "browser": {
             "name": "firefox",
-            "headless": true
+            "headless": true,
+            "profile": "/Users/lionralfs/Library/Application Support/Firefox/Profiles/aqnmme6p.benchmark-profile"
+          }
+        },
+        {
+          "browser": {
+            "name": "safari"
           }
         }
       ]
     },
     {
-      "url": "http://localhost:8080/cookbook.html?benchmark",
+      "url": "https://192.168.3.35:8888/benchmark-cookbook.html",
       "name": "cookbook",
-      "measurement": "global",
+      "measurement": {
+        "mode": "performance",
+        "entryName": "install-measure"
+      },
       "expand": [
         {
           "browser": {
             "name": "chrome",
-            "headless": true,
-            "cpuThrottlingRate": 1
+            "headless": true
           }
         },
         {
           "browser": {
             "name": "firefox",
-            "headless": true
+            "headless": true,
+            "profile": "/Users/lionralfs/Library/Application Support/Firefox/Profiles/aqnmme6p.benchmark-profile"
+          }
+        },
+        {
+          "browser": {
+            "name": "safari"
           }
         }
       ]
