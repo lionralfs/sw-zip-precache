@@ -1,3 +1,6 @@
+Read my blog post: [https://lionralfs.dev/blog/should-you-zip-your-precache-assets](https://lionralfs.dev/blog/should-you-zip-your-precache-assets)
+
+
 ### Browser versions
 
 - CHROME: 95.0.4638.69 (x86_64)
