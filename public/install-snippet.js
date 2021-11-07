@@ -21,7 +21,7 @@ function install(swPath) {
         .then((registrations) => {
           return Promise.all(registrations.map((registration) => registration.unregister()));
         })
-        .then(() => log('uninstalled all'));
+        .then(() => log('uninstalled all old service workers'));
     })
     .then(() => {
       log('installing new sw');
@@ -37,36 +37,15 @@ function install(swPath) {
             serviceWorker = registration.active;
           }
 
-          let messageChannel = new MessageChannel();
-
           if (serviceWorker) {
-            // console.log(serviceWorker.state);
             log('start state: ' + serviceWorker.state);
             if (serviceWorker.state !== 'installing') {
               return log('not a clean start');
             }
             serviceWorker.addEventListener('statechange', function (e) {
               log('new state: ' + e.target.state);
-              // console.log(e.target.state);
-              if (e.target.state === 'activated') {
-                e.target.postMessage('yo', [messageChannel.port1]);
-              }
             });
           }
-
-          messageChannel.port2.onmessage = (event) => {
-            // unregister all old service workers
-            return navigator.serviceWorker
-              .getRegistrations()
-              .then((registrations) => {
-                return Promise.all(registrations.map((registration) => registration.unregister()));
-              })
-              .then(() => {
-                log('uninstalled all');
-                log(JSON.stringify(event.data));
-                window.tachometerResult = event.data.total;
-              });
-          };
         })
         .catch(function (error) {
           log('An error happened during installing the service worker:');
